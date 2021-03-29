@@ -1,0 +1,40 @@
+{
+  "name": "segmentvideodownloader",
+  "version": "1.0.0",
+  "description": "Segment Video Downloader is a tool for downloading any file that comprises multiple segments.",
+  "main": "src/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node src/index"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/vengets/SegmentVideoDownloader.git"
+  },
+  "keywords": [
+    "video",
+    "downloader",
+    "segment",
+    "downloader",
+    "file",
+    "downloader"
+  ],
+  "files": [
+    "package.json",
+    "LICENSE",
+    "README.md",
+    "src/**/*"
+  ],
+  "author": "Venkatesh Kamalapathy",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/vengets/SegmentVideoDownloader/issues"
+  },
+  "homepage": "https://github.com/vengets/SegmentVideoDownloader#readme",
+  "devDependencies": {
+    "log-update": "^4.0.0"
+  },
+  "dependencies": {
+    "dotenv": "^8.2.0"
+  }
+}
