@@ -33,41 +33,52 @@ if (!fs.existsSync(dir)) {
 
 const proto = !myArgs[0].charAt(4).localeCompare('s') ? https : http;
 
-let download = (urlName = '', filePath = '') => new Promise((resolve, reject) => {
-    const file = fs.createWriteStream(filePath);
-    let fileInfo = null;
+class DownloadFile {
+    constructor(url, fileName) {
+        this.url = url;
+        this.fileName = fileName;
+    }
 
-    const request = proto.get(urlName, response => {
-        if (response.statusCode !== 200) {
-            reject(new Error(`Failed to get '${urlName}' (${response.statusCode})`));
-            return;
-        }
+    execute() {
+       return this.download(this.url, this.fileName);
+    }
 
-        fileInfo = {
-            mime: response.headers['content-type'],
-            size: parseInt(response.headers['content-length'], 10),
-        };
+    download = (urlName = '', filePath = '') => new Promise((resolve, reject) => {
+        const file = fs.createWriteStream(filePath);
+        let fileInfo = null;
 
-        response.pipe(file);
+        const request = proto.get(urlName, response => {
+            if (response.statusCode !== 200) {
+                reject(new Error(`Failed to get '${urlName}' (${response.statusCode})`));
+                return;
+            }
+
+            fileInfo = {
+                mime: response.headers['content-type'],
+                size: parseInt(response.headers['content-length'], 10),
+            };
+
+            response.pipe(file);
+        });
+
+        // The destination stream is ended by the time it's called
+        file.on('finish', () => resolve(fileInfo));
+
+        request.on('error', err => {
+            fs.unlink(filePath, () => reject(err));
+        });
+
+        file.on('error', err => {
+            fs.unlink(filePath, () => reject(err));
+        });
+
+        request.end();
     });
-
-    // The destination stream is ended by the time it's called
-    file.on('finish', () => resolve(fileInfo));
-
-    request.on('error', err => {
-        fs.unlink(filePath, () => reject(err));
-    });
-
-    file.on('error', err => {
-        fs.unlink(filePath, () => reject(err));
-    });
-
-    request.end();
-});
+}
 
 for (let i = start; i <= end; i++) {
     let parsed = url.parse(myArgs[0].replace("{}", i.toString()));
-    tasks.push(download(
+    tasks.push(new DownloadFile(
         url.parse(myArgs[0].replace("{}", i)),
         dir + path.basename(parsed.pathname)));
 }
@@ -96,7 +107,7 @@ class PromiseQueue {
    running: [${running.length}]
    complete: [${complete.length}]
    total: [${total}]
-   
+
    execution-time: [${process.hrtime(hrstart)[0]}s ${process.hrtime(hrstart)[1] / 1000000}ms]
 ==================================================
     `);
@@ -104,7 +115,8 @@ class PromiseQueue {
 
     run() {
         while (this.runAnother) {
-            let promise = this.todo.shift();
+            let task = this.todo.shift();
+            let promise = task.execute();
             promise.then(() => {
                 this.complete.push(this.running.shift());
                 this.graphTasks();
@@ -114,9 +126,7 @@ class PromiseQueue {
             this.graphTasks();
         }
     }
-
 }
-
 
 let delayQueue = new PromiseQueue(tasks, 10);
 

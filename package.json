@@ -1,6 +1,6 @@
 {
   "name": "segmentvideodownloader",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Segment Video Downloader is a tool for downloading any file that comprises multiple segments.",
   "main": "src/index.js",
   "scripts": {
